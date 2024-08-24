@@ -1,0 +1,30 @@
+{
+  "name": "app-test-npm-init",
+  "version": "1.0.0",
+  "description": "aplicacion de node con sequelize manual",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --env-file=.env src/server",
+    "start:dev": "node --env-file=.env --watch src/server",
+    "start:prod": "SET NODE_ENV=production&node --env-file=.env --watch src/server.js"
+  },
+  "author": "fabio",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-validator": "^7.1.0",
+    "express-xss-sanitizer": "^1.2.0",
+    "firebase": "^10.12.5",
+    "helmet": "^7.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.12.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.3"
+  }
+}
