@@ -78,19 +78,23 @@ const signInUserValidations = [
 
 const updateUserValidations = [
   body('firstName')
+    .trim()
     .notEmpty()
     .withMessage('firstName is required')
     .bail()
     .isLength({ min: 3 })
     .withMessage('firstName must contain at least 3 characters.')
-    .bail(),
+    .bail()
+    .toLowerCase(),
   body('lastName')
+    .trim()
     .notEmpty()
     .withMessage('lastName is  required')
     .bail()
     .isLength({ min: 3 })
-    .withMessage('lastName must contain at least 3 characters')
-    .bail(),
+    .withMessage('lastName must contain at least 3 characters.')
+    .bail()
+    .toLowerCase(),
   body('phone')
     .notEmpty()
     .withMessage('phone is required')
@@ -120,6 +124,7 @@ const updatePasswordValidation = [
 
 const dataProductValidation = [
   body('title')
+    .trim()
     .notEmpty()
     .withMessage('title is required')
     .bail()
@@ -140,6 +145,9 @@ const dataProductValidation = [
     .withMessage('price must have a maximum of two decimal places')
     .bail(),
   body('brand')
+    .trim()
+    .notEmpty()
+    .withMessage('brand is required')
     .isLength({ min: 4 })
     .withMessage('brand must contain at least 4 characters')
     .bail()
