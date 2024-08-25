@@ -20,7 +20,7 @@ const getAllPurchases = catchError(async (req, res) => {
           required: false,
         },
       },
-      { model: Rating, attributes: ['rating'] },
+      { model: Rating, attributes: ['id', 'rating'] },
     ],
   });
   return res.json({
