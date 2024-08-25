@@ -15,11 +15,16 @@ const getAllProductsCart = catchError(async (req, res) => {
     },
     attributes: ['id', 'quantity', 'status'],
   });
+  let total = 0;
+  productsCart.forEach(({ quantity, product, status }) => {
+    status === 'active' && (total += product.price * quantity);
+  });
   return res.json({
     status: 'success',
     message: 'productsCart successfully brought',
     results: productsCart.length,
     productsCart,
+    total,
   });
 });
 
