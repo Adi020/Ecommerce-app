@@ -43,7 +43,7 @@ const createPurchase = catchError(async (req, res) => {
       userId,
       productId,
       quantity,
-      price: product.price,
+      price: product.price * quantity,
     });
     await product.update({
       availableQuantity: product.availableQuantity - quantity,
