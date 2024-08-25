@@ -17,6 +17,7 @@ const getAllPurchases = catchError(async (req, res) => {
           model: ProductImg,
           attributes: ['id', 'productImgUrl'],
           where: { status: 'active' },
+          required: false,
         },
       },
       { model: Rating, attributes: ['rating'] },
@@ -32,7 +33,7 @@ const getAllPurchases = catchError(async (req, res) => {
 const createPurchase = catchError(async (req, res) => {
   const { id: userId } = req.sessionUser;
   const productsCart = await ProductCart.findAll({
-    where: { userId },
+    where: { userId, status: 'active' },
     attributes: ['id', 'quantity', 'userId', 'productId'],
     include: { model: Product },
   });
