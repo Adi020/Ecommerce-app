@@ -73,6 +73,56 @@ const getProducts = catchError(async (req, res) => {
   });
 });
 
+const getProductsFiltered = catchError(async (req, res) => {
+  const { categories, title, min_price, max_price, short } = req.query;
+  let where = { status: "active" };
+  let whereCategories = {};
+  let order = [];
+
+  if (min_price) where.price = { [Op.gte]: min_price };
+  if (max_price) where.price = { ...where.price, [Op.lte]: max_price };
+  if (title) where.title = { [Op.iLike]: `%${title}%` };
+  if (short === "price-highest-first") order.push(["price", "DESC"]);
+  if (short === "price-lowest-first") order.push(["price", "ASC"]);
+  if (categories) whereCategories.name = { [Op.in]: categories.split(",") };
+
+  const products = await Product.findAll({
+    where: where,
+    attributes: [
+      "id",
+      "title",
+      "description",
+      "price",
+      "availableQuantity",
+      "sales",
+    ],
+    include: [
+      {
+        model: ProductImg,
+        attributes: ["id", "productImgUrl"],
+        where: { status: "active" },
+        required: false,
+      },
+      {
+        model: Category,
+        attributes: ["id", "name"],
+        where: whereCategories,
+      },
+      {
+        model: Rating,
+        attributes: ["id", "rating"],
+      },
+    ],
+    order,
+  });
+  return res.json({
+    status: "success",
+    message: "products successfully brought",
+    results: products.length,
+    products,
+  });
+});
+
 const getProduct = catchError(async (req, res) => {
   const { product } = req;
 
@@ -197,6 +247,7 @@ const deleteProductImages = catchError(async (req, res) => {
 
 module.exports = {
   getProducts,
+  getProductsFiltered,
   createProduct,
   getProduct,
   removeProduct,
