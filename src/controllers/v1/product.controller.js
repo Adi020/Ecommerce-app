@@ -34,10 +34,7 @@ const getProducts = catchError(async (req, res) => {
   if (title) where.title = { [Op.iLike]: `%${title}%` };
   if (short === "price-highest-first") order.push(["price", "DESC"]);
   if (short === "price-lowest-first") order.push(["price", "ASC"]);
-  if (categories)
-    whereCategories = {
-      name: { [Op.in]: categories.split(",") },
-    };
+  if (categories) whereCategories.name = { [Op.in]: categories.split(",") };
 
   const products = await Product.findAll({
     where: where,
