@@ -5,8 +5,6 @@ const AppError = require("../utils/appError");
 const catchError = require("../utils/catchError");
 const ProductImg = require("../models/productImg.model");
 const Rating = require("../models/rating.model");
-const Purchase = require("../models/purchase.model");
-const { raw } = require("express");
 
 const validProductUser = catchError(async (req, res, next) => {
   const { id } = req.params;
