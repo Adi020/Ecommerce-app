@@ -3,11 +3,12 @@ const catchError = require("../../utils/catchError");
 const Product = require("../../models/product.model");
 const ProductImg = require("../../models/productImg.model");
 const { UploadFile } = require("../../utils/firebase-image-cloud");
-const { Op, or } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const AppError = require("../../utils/appError");
 const Category = require("../../models/category.model");
 const Rating = require("../../models/rating.model");
 const obfuscateName = require("../../utils/ofuscName");
+const { db } = require("../../database/config");
 
 const getMyProducts = catchError(async (req, res) => {
   const { id: userId } = req.sessionUser;
@@ -24,28 +25,8 @@ const getMyProducts = catchError(async (req, res) => {
 });
 
 const getProducts = catchError(async (req, res) => {
-  const { categories, title, min_price, max_price, short } = req.query;
-  let where = { status: "active" };
-  let whereCategories = {};
-  let order = [];
-
-  if (min_price) where.price = { [Op.gte]: min_price };
-  if (max_price) where.price = { ...where.price, [Op.lte]: max_price };
-  if (title) where.title = { [Op.iLike]: `%${title}%` };
-  if (short === "price-highest-first") order.push(["price", "DESC"]);
-  if (short === "price-lowest-first") order.push(["price", "ASC"]);
-  if (categories) whereCategories.name = { [Op.in]: categories.split(",") };
-
-  const products = await Product.findAll({
-    where: where,
-    attributes: [
-      "id",
-      "title",
-      "description",
-      "price",
-      "availableQuantity",
-      "sales",
-    ],
+  const best_sellers = await Product.findAll({
+    where: { status: "active" },
     include: [
       {
         model: ProductImg,
@@ -56,20 +37,64 @@ const getProducts = catchError(async (req, res) => {
       {
         model: Category,
         attributes: ["id", "name"],
-        where: whereCategories,
       },
       {
         model: Rating,
-        attributes: ["id", "rating"],
+        attributes: ["id", "rating", "comment"],
       },
     ],
-    order,
+    attributes: [
+      "id",
+      "title",
+      "description",
+      "price",
+      "availableQuantity",
+      "sales",
+    ],
+    order: [["sales", "desc"]],
+    limit: 8,
   });
+
+  const best_rated = await Product.findAll({
+    where: { status: "active" },
+    include: [
+      {
+        model: ProductImg,
+        attributes: ["id", "productImgUrl"],
+        where: { status: "active" },
+        required: false,
+      },
+      {
+        model: Category,
+        attributes: ["id", "name"],
+      },
+      {
+        model: Rating,
+        attributes: ["id", "comment", "rating"],
+      },
+    ],
+    attributes: [
+      "id",
+      "title",
+      "description",
+      "price",
+      "availableQuantity",
+      "sales",
+    ],
+    group: ["product.id", "productImgs.id", "category.id", "ratings.id"],
+    order: [
+      [db.literal("AVG(ratings.rating) IS NULL"), "ASC"],
+      [db.fn("AVG", db.col("ratings.rating")), "DESC"],
+    ],
+    limit: 8,
+    subQuery: false,
+  });
+
   return res.json({
     status: "success",
     message: "products successfully brought",
-    results: products.length,
-    products,
+    best_sellers,
+    best_rated,
   });
 });
 
@@ -95,6 +120,7 @@ const getProductsFiltered = catchError(async (req, res) => {
       "price",
       "availableQuantity",
       "sales",
+      [db.fn("AVG", db.col("ratings.rating")), "averageRating"],
     ],
     include: [
       {
@@ -114,6 +140,8 @@ const getProductsFiltered = catchError(async (req, res) => {
       },
     ],
     order,
+    group: ["product.id", "productImgs.id", "category.id", "ratings.id"],
+    order: [["sales", "desc"]],
   });
   return res.json({
     status: "success",
