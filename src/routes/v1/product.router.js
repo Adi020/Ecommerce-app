@@ -27,7 +27,7 @@ const productRouter = express.Router();
 
 productRouter
   .route("/")
-  .get(filterProducstValidation, getMyProducts)
+  .get(filterProducstValidation, getProducts)
   .post(
     protect,
     upload.array("productImgs", 5),
