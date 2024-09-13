@@ -14,8 +14,6 @@ const protect = catchError(async (req, res, next) => {
     token = req.headers.authorization.split(" ")[1];
   }
   if (!token && req.sessionUserByPass) return next();
-
-  console.log(req.sessionUserByPass);
   if (!token) {
     return next(
       new AppError("you are not logged in, please log in to get access", 401)
