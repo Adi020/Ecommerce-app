@@ -9,6 +9,7 @@ const Category = require("../../models/category.model");
 const Rating = require("../../models/rating.model");
 const obfuscateName = require("../../utils/ofuscName");
 const { db } = require("../../database/config");
+const ProductHistory = require("../../models/history.model");
 
 const getMyProducts = catchError(async (req, res) => {
   const { id: userId } = req.sessionUser;
@@ -163,11 +164,18 @@ const getProductsFiltered = catchError(async (req, res) => {
 });
 
 const getProduct = catchError(async (req, res) => {
-  const { product } = req;
+  const { product, sessionUser } = req;
 
   product.ratings.forEach(({ user }) => {
     user.firstName = obfuscateName(user.firstName);
   });
+
+  if (sessionUser) {
+    ProductHistory.create({
+      productId: product.id,
+      userId: sessionUser.id,
+    });
+  }
 
   return res.json({
     status: "success",
@@ -219,10 +227,7 @@ const createProduct = catchError(async (req, res) => {
 const removeProduct = catchError(async (req, res) => {
   const { product } = req;
   await product.update({ status: "inactive" });
-  return res.json({
-    status: "success",
-    message: "product deleted successfully",
-  });
+  return res.sendStatus(204);
 });
 
 const updateProduct = catchError(async (req, res) => {
