@@ -1,10 +1,11 @@
-const Category = require('./category.model.js');
-const Product = require('./product.model');
-const ProductCart = require('./productCart.model');
-const productImg = require('./productImg.model');
-const Purchase = require('./purchase.model.js');
-const Rating = require('./rating.model.js');
-const User = require('./user.model');
+const Category = require("./category.model.js");
+const ProductHistory = require("./history.model.js");
+const Product = require("./product.model");
+const ProductCart = require("./productCart.model");
+const productImg = require("./productImg.model");
+const Purchase = require("./purchase.model.js");
+const Rating = require("./rating.model.js");
+const User = require("./user.model");
 
 User.hasMany(Product);
 Product.belongsTo(User);
@@ -35,3 +36,9 @@ Rating.belongsTo(Purchase);
 
 Rating.belongsTo(User);
 User.hasMany(Rating);
+
+User.hasMany(ProductHistory);
+ProductHistory.belongsTo(User);
+
+Product.hasMany(ProductHistory);
+ProductHistory.belongsTo(Product);
