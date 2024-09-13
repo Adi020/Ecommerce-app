@@ -1,10 +1,9 @@
 const {
   getAllProductHistory,
   deleteProductHistory,
-} = require("../../controllers/history.controller");
+} = require("../../controllers/v1/history.controller");
 const express = require("express");
 const { protect } = require("../../middlewares/auth.middleware");
-
 const productHistoryRouter = express.Router();
 
 productHistoryRouter.use(protect);
