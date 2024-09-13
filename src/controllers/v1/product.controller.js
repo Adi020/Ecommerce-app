@@ -83,18 +83,32 @@ const getProducts = catchError(async (req, res) => {
     ],
     group: ["product.id", "productImgs.id", "category.id", "ratings.id"],
     order: [
-      [db.literal("AVG(ratings.rating) IS NULL"), "ASC"],
-      [db.fn("AVG", db.col("ratings.rating")), "DESC"],
+      [
+        db.literal(`(
+        SELECT AVG(rating)
+        FROM ratings
+        WHERE ratings."productId" = product.id
+      ) IS NULL`),
+        "ASC",
+      ],
+      [
+        db.literal(`(
+          SELECT AVG(rating)
+          FROM ratings
+          WHERE ratings."productId" = product.id
+        )`),
+        "DESC",
+      ],
     ],
-    limit: 8,
-    subQuery: false,
   });
+
+  const bestRatedLimit = best_rated.slice(0, 8);
 
   return res.json({
     status: "success",
     message: "products successfully brought",
     best_sellers,
-    best_rated,
+    best_rated: bestRatedLimit,
   });
 });
 
