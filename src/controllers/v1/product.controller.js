@@ -40,7 +40,7 @@ const getProducts = catchError(async (req, res) => {
       },
       {
         model: Rating,
-        attributes: ["id", "rating", "comment"],
+        attributes: ["id", "rating"],
       },
     ],
     attributes: [
@@ -120,7 +120,6 @@ const getProductsFiltered = catchError(async (req, res) => {
       "price",
       "availableQuantity",
       "sales",
-      [db.fn("AVG", db.col("ratings.rating")), "averageRating"],
     ],
     include: [
       {
@@ -140,8 +139,6 @@ const getProductsFiltered = catchError(async (req, res) => {
       },
     ],
     order,
-    group: ["product.id", "productImgs.id", "category.id", "ratings.id"],
-    order: [["sales", "desc"]],
   });
   return res.json({
     status: "success",
