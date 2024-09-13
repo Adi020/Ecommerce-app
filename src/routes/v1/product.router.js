@@ -11,7 +11,11 @@ const {
 } = require("../../controllers/v1/product.controller");
 const express = require("express");
 const upload = require("../../utils/multer");
-const { protect, restrictTo } = require("../../middlewares/auth.middleware");
+const {
+  protect,
+  restrictTo,
+  tokenBypass,
+} = require("../../middlewares/auth.middleware");
 const {
   validProductPerFindOne,
   validProductUser,
@@ -52,7 +56,7 @@ productRouter
 
 productRouter
   .route("/:id")
-  .get(validProductPerFindOne, getProduct)
+  .get(tokenBypass, protect, validProductPerFindOne, getProduct)
   .delete(protect, restrictTo("admin"), validProductAdmin, removeProduct)
   .patch(
     protect,
