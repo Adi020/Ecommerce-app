@@ -31,7 +31,7 @@ const productRouter = express.Router();
 
 productRouter
   .route("/")
-  .get(filterProducstValidation, getProducts)
+  .get(tokenBypass, getProducts)
   .post(
     protect,
     upload.array("productImgs", 5),
@@ -39,7 +39,9 @@ productRouter
     createProduct
   );
 
-productRouter.route("/search").get(getProductsFiltered);
+productRouter
+  .route("/search")
+  .get(filterProducstValidation, getProductsFiltered);
 productRouter.route("/me").get(protect, getMyProducts);
 
 productRouter
