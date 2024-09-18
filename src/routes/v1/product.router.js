@@ -56,7 +56,7 @@ productRouter
 
 productRouter
   .route("/:id")
-  .get(tokenBypass, protect, validProductPerFindOne, getProduct)
+  .get(tokenBypass, validProductPerFindOne, getProduct)
   .delete(protect, restrictTo("admin"), validProductAdmin, removeProduct)
   .patch(
     protect,
