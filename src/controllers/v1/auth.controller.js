@@ -1,81 +1,70 @@
-const User = require("../models/user.model");
-const AppError = require("../utils/appError");
-const catchError = require("../utils/catchError");
-const jwt = require("jsonwebtoken");
-const { promisify } = require("util");
+const catchError = require('../../utils/catchError');
+const generateJWT = require('../../utils/jwt');
+const User = require('../../models/user.model');
+const AppError = require('../../utils/appError');
+const { encryptedPassword, verifyPassword } = require('../../utils/bcrypt');
 
-const protect = catchError(async (req, res, next) => {
-  let token;
+const signUp = catchError(async (req, res) => {
+  const { firstName, lastName, email, password, phone } = req.body;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  }
-  if (!token && req.sessionUserByPass) return next();
+  const hashPassword = await encryptedPassword(password);
 
-  if (!token) {
-    return next(
-      new AppError("you are not logged in, please log in to get access", 401)
-    );
-  }
-  const decoded = await promisify(jwt.verify)(token, process.env.TOKEN_SECRET);
-
-  const user = await User.findOne({
-    where: { id: decoded.id, status: "active" },
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    password: hashPassword,
+    phone,
   });
 
-  if (user && req.sessionUserByPass) return next();
+  const token = await generateJWT(user.id);
 
-  if (!user)
-    return next(
-      new AppError("the owner of this token is not longer available", 404)
-    );
-
-  if (user.passwordChangedAt) {
-    const changedTimeStamp = parseInt(
-      user.passwordChangedAt.getTime() / 1000,
-      10
-    );
-
-    if (decoded.iat < changedTimeStamp) {
-      return next(
-        new AppError("User recently changed password, please login again", 401)
-      );
-    }
-  }
-  req.sessionUser = user;
-  next();
+  return res.status(201).json({
+    status: 'success',
+    message: 'user created successfully',
+    user,
+    token,
+  });
 });
 
-const validPassword = catchError(async (req, res, next) => {
-  const { sessionUser } = req;
-  const { currentPassword, newPassword } = req.body;
+const signIn = catchError(async (req, res, next) => {
+  const { email, password } = req.body;
 
-  if (newPassword === currentPassword)
-    return next(new AppError("the password cannot be equeals", 400));
-  const isValid = await verifyPassword(currentPassword, sessionUser.password);
-  if (!isValid) return next(new AppError("incorrect password", 401));
+  const user = await User.findOne({
+    where: { email, status: 'active' },
+  });
 
-  req.user = sessionUser;
-  next();
+  if (!user) return next(new AppError('invalid credentials', 401));
+  const isValid = await verifyPassword(password, user.password);
+  if (!isValid) return next(new AppError('invalid credentials', 401));
+
+  const token = await generateJWT(user.id);
+
+  return res.json({
+    status: 'success',
+    user,
+    token,
+  });
 });
 
-const restrictTo = (...rols) => {
-  return (req, res, next) => {
-    if (!rols.includes(req.sessionUser.role)) {
-      return next(
-        new AppError("you do not have permission to perform this action", 403)
-      );
-    }
-    next();
-  };
-};
+const updatePassword = catchError(async (req, res) => {
+  const { user } = req;
+  const { newPassword } = req.body;
 
-const tokenBypass = (req, res, next) => {
-  req.sessionUserByPass = true;
-  next();
-};
+  const hashPassword = await encryptedPassword(newPassword);
+  await user.update({
+    password: hashPassword,
+    passwordChangedAt: new Date(),
+  });
 
-module.exports = { protect, restrictTo, validPassword, tokenBypass };
+  return res.json({
+    status: 'success',
+    message: 'the user password was updated success',
+  });
+});
+
+module.exports = {
+  signUp,
+  signIn,
+  updatePassword,
+};
