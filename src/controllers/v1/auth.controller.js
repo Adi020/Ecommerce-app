@@ -26,7 +26,7 @@ const protect = catchError(async (req, res, next) => {
     where: { id: decoded.id, status: "active" },
   });
 
-  if (!user && req.sessionUserByPass) return next();
+  if (user && req.sessionUserByPass) return next();
 
   if (!user)
     return next(
