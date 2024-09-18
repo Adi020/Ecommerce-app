@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const AppError = require("../utils/appError");
+const bypassError = require("../utils/bypassError");
 const catchError = require("../utils/catchError");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
@@ -48,11 +49,7 @@ const protectToken = async (req, res, next) => {
 
 const protect = catchError(protectToken);
 
-const tokenBypass = (controller) => {
-  return (req, res, next) => {
-    protectToken(req, res, next).catch(() => next());
-  };
-};
+const tokenBypass = bypassError(protectToken);
 
 const validPassword = catchError(async (req, res, next) => {
   const { sessionUser } = req;
