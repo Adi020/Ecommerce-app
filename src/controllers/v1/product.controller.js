@@ -3,13 +3,14 @@ const catchError = require("../../utils/catchError");
 const Product = require("../../models/product.model");
 const ProductImg = require("../../models/productImg.model");
 const { UploadFile } = require("../../utils/firebase-image-cloud");
-const { Op, Sequelize } = require("sequelize");
+const { Op, where } = require("sequelize");
 const AppError = require("../../utils/appError");
 const Category = require("../../models/category.model");
 const Rating = require("../../models/rating.model");
 const obfuscateName = require("../../utils/ofuscName");
 const { db } = require("../../database/config");
 const ProductHistory = require("../../models/history.model");
+const User = require("../../models/user.model");
 
 const getMyProducts = catchError(async (req, res) => {
   const { id: userId } = req.sessionUser;
@@ -105,11 +106,74 @@ const getProducts = catchError(async (req, res) => {
 
   const bestRatedLimit = best_rated.slice(0, 8);
 
+  let recomended = [];
+
+  if (req.sessionUser) {
+    const categoriesViewRecently = await ProductHistory.findAll({
+      where: { userId: req.sessionUser.id },
+      include: [
+        {
+          model: Product,
+          attributes: [],
+        },
+      ],
+      attributes: [
+        [db.col("product.categoryId"), "categoryId"],
+        [db.fn("COUNT", db.col("product.categoryId")), "countCategoryId"],
+      ],
+      group: ["product.categoryId"],
+      order: [["countCategoryId", "DESC"]],
+      limit: 3,
+      raw: true,
+    });
+
+    const productsRecomendedPromises = categoriesViewRecently.map(
+      async ({ categoryId }) => {
+        return await Product.findAll({
+          where: { categoryId, status: "active" },
+          include: [
+            {
+              model: ProductImg,
+              attributes: ["id", "productImgUrl"],
+              where: { status: "active" },
+              required: false,
+            },
+            {
+              model: Category,
+              attributes: ["id", "name"],
+            },
+            {
+              model: Rating,
+              attributes: ["id", "comment", "rating"],
+            },
+          ],
+          attributes: [
+            "id",
+            "title",
+            "description",
+            "price",
+            "availableQuantity",
+            "sales",
+          ],
+          order: [["sales", "desc"]],
+          limit: 3,
+        });
+      }
+    );
+    const productsRecomended = await Promise.all(productsRecomendedPromises);
+    recomended.push(...productsRecomended);
+  } else {
+    const bestRatedLimit = best_rated.slice(0, 16);
+    recomended = bestRatedLimit;
+    recomended = bestRatedLimit.sort((a, b) => b.sales - a.sales);
+  }
+
   return res.json({
     status: "success",
     message: "products successfully brought",
     best_sellers,
     best_rated: bestRatedLimit,
+    recomended,
   });
 });
 
@@ -235,9 +299,9 @@ const updateProduct = catchError(async (req, res) => {
   const { title, description, price, brand, availableQuantity } = req.body;
 
   await product.update({
-    title: title.toLowerCase().trim(),
-    description: description.toLowerCase().trim(),
-    brand: brand.toLowerCase().trim(),
+    title,
+    description,
+    brand,
     price,
     availableQuantity,
   });
