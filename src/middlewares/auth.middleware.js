@@ -1,13 +1,11 @@
 const User = require("../models/user.model");
 const AppError = require("../utils/appError");
-const bypassError = require("../utils/bypassError");
 const catchError = require("../utils/catchError");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 
-const protectToken = async (req, res, next) => {
+const protect = catchError(async (req, res, next) => {
   let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -21,11 +19,9 @@ const protectToken = async (req, res, next) => {
     );
   }
   const decoded = await promisify(jwt.verify)(token, process.env.TOKEN_SECRET);
-
   const user = await User.findOne({
     where: { id: decoded.id, status: "active" },
   });
-
   if (!user)
     return next(
       new AppError("the owner of this token is not longer available", 404)
@@ -45,11 +41,34 @@ const protectToken = async (req, res, next) => {
   }
   req.sessionUser = user;
   next();
+});
+
+const tokenBypass = async (req, res, next) => {
+  try {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) return next();
+    const decoded = await promisify(jwt.verify)(
+      token,
+      process.env.TOKEN_SECRET
+    );
+    const user = await User.findOne({
+      where: { id: decoded.id, status: "active" },
+    });
+
+    req.sessionUser = user;
+    next();
+  } catch (error) {
+    next();
+    console.log(error);
+  }
 };
-
-const protect = catchError(protectToken);
-
-const tokenBypass = bypassError(protectToken);
 
 const validPassword = catchError(async (req, res, next) => {
   const { sessionUser } = req;
