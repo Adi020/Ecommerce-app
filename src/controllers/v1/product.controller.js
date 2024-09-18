@@ -1,16 +1,16 @@
 const catchError = require("../../utils/catchError");
+const obfuscateName = require("../../utils/ofuscName");
+const { UploadFile } = require("../../utils/firebase-image-cloud");
 
 const Product = require("../../models/product.model");
 const ProductImg = require("../../models/productImg.model");
-const { UploadFile } = require("../../utils/firebase-image-cloud");
-const { Op, where } = require("sequelize");
 const AppError = require("../../utils/appError");
 const Category = require("../../models/category.model");
 const Rating = require("../../models/rating.model");
-const obfuscateName = require("../../utils/ofuscName");
-const { db } = require("../../database/config");
 const ProductHistory = require("../../models/history.model");
-const User = require("../../models/user.model");
+
+const { Op } = require("sequelize");
+const { db } = require("../../database/config");
 
 const getMyProducts = catchError(async (req, res) => {
   const { id: userId } = req.sessionUser;
