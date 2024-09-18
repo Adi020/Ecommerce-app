@@ -15,6 +15,7 @@ Este proyecto es una api de un ecommerce, que permitira a los usuarios, registra
 - Comprar productos;
 - Calificar compras;
 - Ver historial
+- Sugerencia de productos por actividad reciente
 
 ## Tecnologías utilizadas
 - express: Un framework minimalista de Node.js que facilita la creación de aplicaciones web y APIs;
