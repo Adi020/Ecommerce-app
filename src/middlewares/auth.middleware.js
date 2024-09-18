@@ -4,7 +4,7 @@ const catchError = require("../utils/catchError");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 
-const protect = catchError(async (req, res, next) => {
+const protectToken = async (req, res, next) => {
   let token;
 
   if (
@@ -13,7 +13,7 @@ const protect = catchError(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
-  if (!token && req.sessionUserByPass) return next();
+
   if (!token) {
     return next(
       new AppError("you are not logged in, please log in to get access", 401)
@@ -44,7 +44,15 @@ const protect = catchError(async (req, res, next) => {
   }
   req.sessionUser = user;
   next();
-});
+};
+
+const protect = catchError(protectToken);
+
+const tokenBypass = (controller) => {
+  return (req, res, next) => {
+    protectToken(req, res, next).catch(() => next());
+  };
+};
 
 const validPassword = catchError(async (req, res, next) => {
   const { sessionUser } = req;
@@ -68,11 +76,6 @@ const restrictTo = (...rols) => {
     }
     next();
   };
-};
-
-const tokenBypass = (req, res, next) => {
-  req.sessionUserByPass = true;
-  next();
 };
 
 module.exports = { protect, restrictTo, validPassword, tokenBypass };
