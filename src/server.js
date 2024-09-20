@@ -7,8 +7,8 @@ db.authenticate()
   .catch((err) => console.log(err));
 
 db.sync()
-  .then(() => {
-    // await generateData();
+  .then(async () => {
+     await generateData();
     console.log('database synchronized');
   })
   .catch((err) => console.log(err));
