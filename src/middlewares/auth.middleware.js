@@ -5,12 +5,9 @@ const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 
 const protect = catchError(async (req, res, next) => {
-  let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
+  let token = req.headers.authorization;
+  if (token && token.startsWith("Bearer")) {
+    token = token.split(" ")[1];
   }
 
   if (!token) {
@@ -45,22 +42,32 @@ const protect = catchError(async (req, res, next) => {
 
 const tokenBypass = async (req, res, next) => {
   try {
-    let token;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
+    let token = req.headers.authorization;
+    if (token && token.startsWith("Bearer")) {
+      token = token.split(" ")[1];
     }
 
     if (!token) return next();
+
     const decoded = await promisify(jwt.verify)(
       token,
       process.env.TOKEN_SECRET
     );
+
     const user = await User.findOne({
       where: { id: decoded.id, status: "active" },
     });
+
+    if (!user) return next();
+
+    if (user.passwordChangedAt) {
+      const changedTimeStamp = parseInt(
+        user.passwordChangedAt.getTime() / 1000,
+        10
+      );
+
+      if (decoded.iat < changedTimeStamp) return next();
+    }
 
     req.sessionUser = user;
     next();
