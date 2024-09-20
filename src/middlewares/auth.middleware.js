@@ -15,10 +15,13 @@ const protect = catchError(async (req, res, next) => {
       new AppError("you are not logged in, please log in to get access", 401)
     );
   }
+
   const decoded = await promisify(jwt.verify)(token, process.env.TOKEN_SECRET);
+
   const user = await User.findOne({
     where: { id: decoded.id, status: "active" },
   });
+  
   if (!user)
     return next(
       new AppError("the owner of this token is not longer available", 404)
@@ -36,6 +39,7 @@ const protect = catchError(async (req, res, next) => {
       );
     }
   }
+
   req.sessionUser = user;
   next();
 });
