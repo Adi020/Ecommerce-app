@@ -2,7 +2,7 @@ const express = require("express");
 require("./models");
 
 const cors = require("cors");
-const { default: helmet } = require("helmet");
+const helmet = require("helmet");
 const hpp = require("hpp");
 const { xss } = require("express-xss-sanitizer");
 
