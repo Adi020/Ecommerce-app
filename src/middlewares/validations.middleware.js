@@ -1,4 +1,4 @@
-const { body, query, validationResult } = require("express-validator");
+const { body, query, validationResult, param } = require("express-validator");
 
 const validFields = (req, res, next) => {
   const errors = validationResult(req);
@@ -264,6 +264,19 @@ const filterProducstValidation = [
   validFields,
 ];
 
+const validationId = [
+  param("id")
+    .optional()
+    .isNumeric()
+    .withMessage("id must be a number")
+    .bail()
+    .isInt({ min: 1 })
+    .withMessage("purchaseId must be a positive integer")
+    .bail()
+    .toInt(),
+  validFields,
+];
+
 module.exports = {
   signUpuserValidations,
   signInUserValidations,
@@ -275,4 +288,5 @@ module.exports = {
   createRatingValidation,
   createCategoryValidation,
   filterProducstValidation,
+  validationId,
 };
