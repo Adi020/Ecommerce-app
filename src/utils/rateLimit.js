@@ -1,4 +1,4 @@
-const { default: rateLimit } = require("express-rate-limit");
+const rateLimit = require("express-rate-limit");
 
 const limitRequest = (maxRequest, windowsMinutes, message) => {
   return rateLimit({
