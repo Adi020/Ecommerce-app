@@ -8,7 +8,6 @@ const {
   updateProductImages,
   deleteProductImages,
   getProductsFiltered,
-  getProductTest,
 } = require("../../controllers/v1/product.controller");
 const express = require("express");
 const upload = require("../../utils/multer");
@@ -25,7 +24,7 @@ const {
 const {
   dataProductValidation,
   deleteProductImagesValidation,
-  filterProducstValidation,
+  filterProductsValidation,
   validationId,
 } = require("../../middlewares/validations.middleware");
 
@@ -43,7 +42,7 @@ productRouter
 
 productRouter
   .route("/search")
-  .get(filterProducstValidation, getProductsFiltered);
+  .get(filterProductsValidation, getProductsFiltered);
 productRouter.route("/me").get(protect, getMyProducts);
 
 productRouter
