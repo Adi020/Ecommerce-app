@@ -66,7 +66,6 @@ const tokenBypass = async (req, res, next) => {
     next();
   } catch (error) {
     next();
-    console.log(error);
   }
 };
 
