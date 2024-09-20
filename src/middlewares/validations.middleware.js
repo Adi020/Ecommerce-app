@@ -242,7 +242,7 @@ const createCategoryValidation = [
   validFields,
 ];
 
-const filterProducstValidation = [
+const filterProductsValidation = [
   query("min_price")
     .optional()
     .isNumeric()
@@ -287,6 +287,6 @@ module.exports = {
   ProductCartValidation,
   createRatingValidation,
   createCategoryValidation,
-  filterProducstValidation,
+  filterProductsValidation,
   validationId,
 };
