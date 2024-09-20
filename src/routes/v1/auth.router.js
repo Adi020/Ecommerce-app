@@ -1,26 +1,27 @@
-const express = require('express');
+const express = require("express");
 const {
   signUp,
   signIn,
   updatePassword,
-} = require('../../controllers/v1/auth.controller');
+} = require("../../controllers/v1/auth.controller");
 const {
   signInUserValidations,
   signUpuserValidations,
   updatePasswordValidation,
-} = require('../../middlewares/validations.middleware');
-const { protect, validPassword } = require('../../middlewares/auth.middleware');
-const { validUserAdmin } = require('../../middlewares/user.middleware');
+  validationId,
+} = require("../../middlewares/validations.middleware");
+const { protect, validPassword } = require("../../middlewares/auth.middleware");
+const { validUserAdmin } = require("../../middlewares/user.middleware");
 
 const authRouter = express.Router();
 
-authRouter.post('/signup', signUpuserValidations, signUp);
-authRouter.post('/signin', signInUserValidations, signIn);
+authRouter.post("/signup", signUpuserValidations, signUp);
+authRouter.post("/signin", signInUserValidations, signIn);
 
 authRouter.use(protect);
 
 authRouter.patch(
-  '/password/me',
+  "/password/me",
   protect,
   validPassword,
   updatePasswordValidation,
@@ -28,7 +29,8 @@ authRouter.patch(
 );
 
 authRouter.patch(
-  '/password/:id',
+  "/password/:id",
+  validationId,
   validUserAdmin,
   updatePasswordValidation,
   updatePassword
