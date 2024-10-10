@@ -253,7 +253,7 @@ const createProduct = catchError(async (req, res) => {
   const { title, description, price, brand, availableQuantity, categoryId } =
     req.body;
 
-  const product = await Product.create({
+  let product = await Product.create({
     title,
     description,
     price,
@@ -275,16 +275,15 @@ const createProduct = catchError(async (req, res) => {
       });
     });
     await Promise.all(productImgsPromises);
-  }
-
-  const result = await Product.findByPk(product.id, {
+    product = await Product.findByPk(product.id, {
     include: [{ model: ProductImg, attributes: ["id", "productImgUrl"] }],
   });
+  }
 
   return res.status(201).json({
     status: "success",
     message: "product created successfully",
-    product: result,
+    product: product,
   });
 });
 
