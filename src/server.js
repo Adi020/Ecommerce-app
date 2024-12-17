@@ -9,6 +9,7 @@ db.authenticate()
 db.sync()
   .then(() => {
     console.log('database synchronized');
+    generateData()
   })
   .catch((err) => console.log(err));
 
