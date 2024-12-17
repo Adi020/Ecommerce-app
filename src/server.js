@@ -1,6 +1,5 @@
 const app = require('./app');
 const { db } = require('./database/config');
-const generateData = require('./utils/data/Data');
 
 db.authenticate()
   .then(() => console.log('database conected...'))
@@ -9,7 +8,6 @@ db.authenticate()
 db.sync()
   .then(() => {
     console.log('database synchronized');
-    generateData()
   })
   .catch((err) => console.log(err));
 
